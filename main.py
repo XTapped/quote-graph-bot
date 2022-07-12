@@ -55,11 +55,13 @@ async def make(
         await inter.edit_original_message('Filtering by query...')
         def query_filter(msg: Message):
             if '\n' in msg.content:
+                print('Newline found in message.content. Assuming it is a multi-line quote')
                 stripped_quote = re.findall(r':\s(.+)', msg.content)
                 if stripped_quote == []:
                     return False
                 return True if query in ''.join(stripped_quote) else False
             else:
+                print('Newline not found in message.content. Assuming it is a normal quote')
                 stripped_quote = re.search(r'"(.+)"', msg.content)
                 if stripped_quote is None:
                     return False
