@@ -54,7 +54,6 @@ async def make(
     if query != '':
         await inter.edit_original_message('Filtering by query...')
         def query_filter(msg: Message):
-            print(msg.content)
             if '\n' in msg.content:
                 stripped_quote = re.findall(r':\s(.+)', msg.content)
                 if stripped_quote == []:
