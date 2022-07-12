@@ -50,9 +50,11 @@ async def make(
     else:
         quotes = quotes_time_dict['quotes']
 
+    plt.title('Amount of quotes per member')
     # Filter by query
     if query != '':
         await inter.edit_original_message('Filtering by query...')
+        plt.title(f'Amount of quotes that contain "{query}" per member')
         def query_filter(msg: Message):
             if '\n' in msg.content:
                 stripped_quote = re.findall(r':\s(.+)', msg.content)
