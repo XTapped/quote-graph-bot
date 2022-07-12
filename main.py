@@ -54,9 +54,9 @@ async def make(
     if query != '':
         await inter.edit_original_message('Filtering by query...')
         def query_filter(msg: Message):
+            print(msg.content)
             if '\n' in msg.content:
                 stripped_quote = re.findall(r':\s(.+)', msg.content)
-                print(stripped_quote)
                 if stripped_quote == []:
                     return False
                 return True if query in ''.join(stripped_quote) else False
@@ -65,7 +65,6 @@ async def make(
                 if stripped_quote is None:
                     return False
                 stripped_quote = stripped_quote.group(1)
-                print(stripped_quote)
                 return True if query in stripped_quote else False
         
         quotes = list(filter(query_filter, quotes))
