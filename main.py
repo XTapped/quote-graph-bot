@@ -2,7 +2,8 @@ import re
 import time
 import matplotlib.pyplot as plt
 import numpy as np
-from disnake import ApplicationCommandInteraction, File, Intents, NotFound, TextChannel, utils, Message
+import itertools
+from disnake import ApplicationCommandInteraction, File, Intents, TextChannel, utils, Message
 from disnake.ext.commands import InteractionBot, Param
 from os import environ
 from collections import Counter
@@ -53,11 +54,17 @@ async def make(
     if query != '':
         await inter.edit_original_message('Filtering by query...')
         def query_filter(msg: Message):
-            stripped_quote = re.search(r'"(.+)"', msg.content)
-            if stripped_quote is None:
-                return False
-            stripped_quote = stripped_quote.group(1)
-            return True if query in stripped_quote else False
+            if '\n' in msg.content:
+                stripped_quote = re.findall(r':\s(.+)', msg.content)
+                if stripped_quote == []:
+                    return False
+                return True if query in ''.join(stripped_quote) else False
+            else:
+                stripped_quote = re.search(r'"(.+)"', msg.content)
+                if stripped_quote is None:
+                    return False
+                stripped_quote = stripped_quote.group(1)
+                return True if query in stripped_quote else False
         
         quotes = list(filter(query_filter, quotes))
         
@@ -65,28 +72,14 @@ async def make(
             await inter.edit_original_message('No quotes matched your query! Sorry!')
             return
 
-    # Map list[Message] to list of quotee IDs
     await inter.edit_original_message('Cleaning up data...')
-    quotee_ids: list[str] = []
-    for msg in quotes:
-        match = re.findall(r'<@!?(\d+)>', msg.content)
-        if match != []:
-            quotee_id = match[-1]
-            quotee_ids.append(quotee_id)
-    
+    mentions = [msg.mentions for msg in quotes]
+    mentions = list(itertools.chain.from_iterable(mentions))
+    mentions = [str(user) for user in mentions]
 
     # Make a counter out of it
-    quotee_id_counts = Counter(quotee_ids)
-
-    quotee_counts = {}
-    for id, count in quotee_id_counts.items():
-        try:
-            user = (utils.find(lambda user: user.id == id, bot.users)) or (await bot.fetch_user(id))
-        except NotFound:
-            continue
-        quotee_counts[str(user)] = count
-
-    quotee_counts = dict(sorted(quotee_counts.items(), key=lambda item: item[1]))
+    mention_counts = Counter(mentions)
+    quotee_counts = dict(sorted(mention_counts.items(), key=lambda item: item[1]))
 
     await inter.edit_original_message('Rendering graph...')
     # Produce a graph, save as jpeg
