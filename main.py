@@ -1,3 +1,4 @@
+import os
 import re
 import time
 import matplotlib.pyplot as plt
@@ -16,6 +17,7 @@ quotes_time_dict = {
     'quotes': None,
     'timestamp': None
 }
+active_plots = {}
 
 @bot.event
 async def on_ready():
@@ -51,13 +53,9 @@ async def make(
     else:
         quotes = quotes_time_dict['quotes']
 
-    plt.title('Amount of quotes per member')
     # Filter by query
     if query != '':
         await inter.edit_original_message('Filtering by query...')
-
-        plt.title(f'Amount of quotes that contain "{query}" per member')
-
         def query_filter(msg: Message):
             if '\n' in msg.content:
                 stripped_quote = re.findall(r':\s(.+)', msg.content)
@@ -92,25 +90,31 @@ async def make(
 
     await inter.edit_original_message('Rendering graph...')
     # Produce a graph, save as jpeg
+    fig, ax = plt.subplots()
     x = list(quotee_counts.keys())
     y = list(quotee_counts.values())
 
-    if chart_type == 'horizontal_bar_chart':
-        plt.barh(x, y)
-        plt.grid(True)
-    elif chart_type == 'pie_chart':
-        plt.pie(y, labels=x, autopct=lambda ex: '{:.0f}'.format(ex*np.asarray(y, dtype=np.float32).sum()/100))
-    elif chart_type == 'vertical_bar_chart':
-        plt.xticks(rotation='vertical')
-        plt.bar(x, y)
-        plt.grid(True)
+    if query != '':
+        ax.set_title(f'Amount of quotes that contain "{query}" per member')
+    else:
+        ax.set_title(f'Amount of quotes per member')
 
-    plt.savefig('graph.jpg', dpi=300, bbox_inches='tight')
+    if chart_type == 'horizontal_bar_chart':
+        ax.barh(x, y)
+        ax.grid(True)
+    elif chart_type == 'pie_chart':
+        ax.pie(y, labels=x, autopct=lambda ex: '{:.0f}'.format(ex*np.asarray(y, dtype=np.float32).sum()/100))
+    elif chart_type == 'vertical_bar_chart':
+        ax.set_xticks(np.arange(len(x)), x, rotation='vertical')
+        ax.bar(x, y)
+        ax.grid(True)
+
+    plt.savefig(f'graph_{inter.id}.jpg', dpi=300, bbox_inches='tight')
 
     await inter.edit_original_message('Done!')
     
     # Send message of graph
-    await inter.channel.send(file=File('./graph.jpg'))
-    plt.clf()
+    await inter.channel.send(file=File(f'./graph_{inter.id}.jpg'))
+    os.remove(f'./graph_{inter.id}.jpg')
 
 bot.run(environ['BOT_TOKEN'])
