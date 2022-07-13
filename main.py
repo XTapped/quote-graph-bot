@@ -56,21 +56,23 @@ async def make(
     if query != '':
         await inter.edit_original_message('Filtering by query...')
 
-        if not case_sensitive:
-            query = query.lower()
-
         plt.title(f'Amount of quotes that contain "{query}" per member')
+
         def query_filter(msg: Message):
             if '\n' in msg.content:
                 stripped_quote = re.findall(r':\s(.+)', msg.content)
                 if stripped_quote == []:
                     return False
+                if not case_sensitive:
+                    return True if query.lower() in ''.join(stripped_quote).lower() else False
                 return True if query in ''.join(stripped_quote) else False
             else:
                 stripped_quote = re.search(r'"(.+)"', msg.content)
                 if stripped_quote is None:
                     return False
                 stripped_quote = stripped_quote.group(1)
+                if not case_sensitive:
+                    return True if query.lower() in stripped_quote.lower() else False
                 return True if query in stripped_quote else False
         
         quotes = list(filter(query_filter, quotes))
