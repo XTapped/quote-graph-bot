@@ -95,9 +95,9 @@ async def make(
     y = list(quotee_counts.values())
 
     if query != '':
-        ax.set_title(f'Amount of quotes that contain "{query}" per member')
+        ax.set_title(f'Amount of quotes that contain "{query}" per member\nRequested by {inter.author}')
     else:
-        ax.set_title(f'Amount of quotes per member')
+        ax.set_title(f'Amount of quotes per member\nRequested by {inter.author}')
 
     if chart_type == 'horizontal_bar_chart':
         ax.barh(x, y)
