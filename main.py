@@ -9,7 +9,7 @@ from os import environ
 from collections import Counter
 
 plt.rcParams['axes.axisbelow'] = True
-bot = InteractionBot(intents=Intents.default())
+bot = InteractionBot(intents=Intents.default(), test_guilds=[280230185884975104])
 cooldown_mins = 30
 cooldown_secs = cooldown_mins * 60
 quotes_time_dict = {
