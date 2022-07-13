@@ -29,7 +29,8 @@ async def plot(inter: ApplicationCommandInteraction):
 async def make(
     inter: ApplicationCommandInteraction,
     chart_type: str = Param(description='Type of chart (default: horizontal_bar_chart)', choices=['pie_chart', 'horizontal_bar_chart', 'vertical_bar_chart'], default='horizontal_bar_chart'),
-    query: str = Param(description='Query to find and sort by (default: None)', default='')
+    query: str = Param(description='Query to find and sort by (default: None)', default=''),
+    case_sensitive: bool = Param(description='Turn on case sensitivity for queries (default: False)', default=False)
 ):
     # Defer response just in case
     await inter.response.defer(ephemeral=True)
@@ -54,6 +55,10 @@ async def make(
     # Filter by query
     if query != '':
         await inter.edit_original_message('Filtering by query...')
+
+        if not case_sensitive:
+            query = query.lower()
+
         plt.title(f'Amount of quotes that contain "{query}" per member')
         def query_filter(msg: Message):
             if '\n' in msg.content:
